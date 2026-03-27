@@ -22,12 +22,12 @@ class RenderTests(unittest.TestCase):
     def test_snapshot_signature_ignores_generated_at(self) -> None:
         first = {
             "generated_at": "2026-03-27T19:00:00Z",
-            "tool_version": "0.1.0",
+            "tool_version": "0.1.1",
             "providers": [{"id": "codex", "auth": "logged_in"}],
         }
         second = {
             "generated_at": "2026-03-27T19:00:05Z",
-            "tool_version": "0.1.0",
+            "tool_version": "0.1.1",
             "providers": [{"id": "codex", "auth": "logged_in"}],
         }
         self.assertEqual(_snapshot_signature(first), _snapshot_signature(second))
@@ -82,7 +82,7 @@ class RenderTests(unittest.TestCase):
     def test_build_watch_frame_includes_quick_toc_and_panels(self) -> None:
         snapshot = {
             "generated_at": "2026-03-27T19:00:00Z",
-            "tool_version": "0.1.0",
+            "tool_version": "0.1.1",
             "providers": [
                 {"id": "codex", "label": "Codex", "auth": "logged_in", "mode": "plan", "usage": {}},
                 {"id": "claude", "label": "Claude Code", "auth": "logged_in", "mode": "plan", "usage": {}},

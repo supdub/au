@@ -34,25 +34,7 @@ jobs:
       - name: Verify tag matches package version
         env:
           TAG_VERSION: ${{ github.ref_name }}
-          PACKAGE_VERSION: ${{ steps.package_version.outputs.value }}
-        run: |
-          python - <<'PY'
-          import os
-
-          def normalize(value: str) -> str:
-              parts = value.split(".")
-              while len(parts) > 1 and parts[-1] == "0":
-                  parts.pop()
-              return ".".join(parts)
-
-          tag_version = os.environ["TAG_VERSION"].removeprefix("v")
-          package_version = os.environ["PACKAGE_VERSION"]
-
-          if normalize(tag_version) != normalize(package_version):
-              raise SystemExit(
-                  f"Tag version {tag_version!r} does not match package version {package_version!r}"
-              )
-          PY
+        run: python scripts/check_release_version.py
 
       - name: Run unit tests
         run: python -m unittest discover -s tests -p 'test_*.py'

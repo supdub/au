@@ -39,6 +39,9 @@ jobs:
       - name: CLI version smoke test
         run: python -m agent_usage_cli -v
 
+      - name: Release version check smoke test
+        run: TAG_VERSION="v$(python -c 'import agent_usage_cli; print(agent_usage_cli.__version__)')" python scripts/check_release_version.py
+
   package:
     name: Package
     runs-on: ubuntu-latest

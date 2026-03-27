@@ -176,7 +176,7 @@ Example shape:
 ```json
 {
   "generated_at": "2026-03-27T19:06:24Z",
-  "tool_version": "0.1.0",
+  "tool_version": "0.1.1",
   "providers": [
     {
       "id": "codex",
@@ -255,7 +255,7 @@ Formula scaffold:
 Build a `.deb`:
 
 ```bash
-./packaging/debian/build-deb.sh 0.1.0 all
+./packaging/debian/build-deb.sh 0.1.1 all
 ```
 
 ## CI for PRs
