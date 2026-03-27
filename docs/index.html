@@ -22,8 +22,14 @@
             about to bite you.
           </p>
           <div class="install-top">
+            <button class="copy-button" type="button" aria-label="Copy install command" data-copy-target="install-command">
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M9 9h10v10H9z"></path>
+                <path d="M5 5h10v2H7v8H5z"></path>
+              </svg>
+            </button>
             <p class="snippet-label">Install in one step</p>
-            <pre><code>curl -fsSL https://raw.githubusercontent.com/supdub/au/main/install.sh | bash
+            <pre id="install-command"><code>curl -fsSL https://raw.githubusercontent.com/supdub/au/main/install.sh | bash
 au -v</code></pre>
           </div>
           <div class="hero-actions">
@@ -154,5 +160,28 @@ au -p</code></pre>
         </p>
       </footer>
     </div>
+    <script>
+      (() => {
+        const button = document.querySelector("[data-copy-target]");
+        if (!button) return;
+        const defaultLabel = button.getAttribute("aria-label") || "Copy install command";
+        button.addEventListener("click", async () => {
+          const targetId = button.getAttribute("data-copy-target");
+          const target = targetId ? document.getElementById(targetId) : null;
+          if (!target) return;
+          try {
+            await navigator.clipboard.writeText(target.innerText.trim());
+            button.classList.add("copied");
+            button.setAttribute("aria-label", "Copied install command");
+            window.setTimeout(() => {
+              button.classList.remove("copied");
+              button.setAttribute("aria-label", defaultLabel);
+            }, 1400);
+          } catch (_error) {
+            button.setAttribute("aria-label", "Copy failed");
+          }
+        });
+      })();
+    </script>
   </body>
 </html>
