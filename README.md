@@ -1,10 +1,15 @@
 # au
 
 <p align="center">
+  <img src="assets/au-gold.svg" alt="au gold icon" width="120">
+</p>
+
+<p align="center">
   <strong>A tiny usage dashboard for Codex, Claude Code, and Cursor Agent.</strong>
 </p>
 
 <p align="center">
+  <a href="https://github.com/supdub/agent-usage-cli/actions/workflows/ci.yml"><img alt="CI" src="https://img.shields.io/github/actions/workflow/status/supdub/agent-usage-cli/ci.yml?branch=main&label=ci"></a>
   <a href="https://github.com/supdub/agent-usage-cli/blob/main/LICENSE"><img alt="License" src="https://img.shields.io/badge/license-MIT-0f172a.svg"></a>
   <img alt="Python" src="https://img.shields.io/badge/python-3.11%2B-2563eb.svg">
   <img alt="CLI" src="https://img.shields.io/badge/interface-CLI-16a34a.svg">
@@ -22,6 +27,23 @@ It is designed for two very different jobs:
 - JSON-first automation for agent harnesses and scripts
 - a colorful live dashboard for humans who want a fast read on plan state
 
+## Table of Contents
+
+- [Why it exists](#why-it-exists)
+- [Highlights](#highlights)
+- [Quick Start](#quick-start)
+- [Showcase](#showcase)
+- [What it shows](#what-it-shows)
+- [Usage](#usage)
+- [Output modes](#output-modes)
+- [Install and distribution](#install-and-distribution)
+- [CI for PRs](#ci-for-prs)
+- [Development](#development)
+- [Data sources](#data-sources)
+- [Known limits](#known-limits)
+- [Roadmap](#roadmap)
+- [License](#license)
+
 ## Why it exists
 
 Most agent CLIs are good at doing work and bad at answering simple questions like:
@@ -38,6 +60,7 @@ Most agent CLIs are good at doing work and bad at answering simple questions lik
 
 - Compact JSON by default.
 - `--watch` dashboard with in-place refresh in the terminal alternate screen.
+- btop-inspired boxed panels, tab-style contents strip, and animated header accents.
 - Helpful login guidance when a provider is not authenticated.
 - Real local Codex token/window parsing.
 - Real local Claude session parsing.
@@ -66,6 +89,19 @@ au
 pip install .
 au -p
 ```
+
+## Showcase
+
+<p align="center">
+  <img src="image.png" alt="au watch mode screenshot" width="1000">
+</p>
+
+The watch dashboard is built for always-on terminal use:
+
+- quick top-level contents strip
+- boxed btop-style panels
+- in-place redraws in the alternate screen
+- dense quota-first summaries instead of verbose logs
 
 ## What it shows
 
@@ -152,6 +188,8 @@ Example shape:
 - keeps a true 1s steady-state refresh cadence
 - caches slower providers so the dashboard remains responsive
 - renders bars when the provider exposes trustworthy percentage data
+- adds a quick top-level contents strip so each provider is scannable at a glance
+- uses rounded panels and animated accents instead of a plain log dump
 
 ## Example
 
@@ -210,6 +248,20 @@ Build a `.deb`:
 ```bash
 ./packaging/debian/build-deb.sh 0.1.0 all
 ```
+
+## CI for PRs
+
+Pull requests and `main` pushes run GitHub Actions checks from:
+
+- `.github/workflows/ci.yml`
+
+Current CI jobs cover:
+
+- Python setup
+- unit tests
+- CLI help smoke test
+- zipapp build
+- Debian package build
 
 ## Development
 
@@ -275,6 +327,10 @@ tests/                    unit tests
 - Expand Claude window support beyond the current live reset-state probe
 - Add release automation for tagged GitHub releases
 - Publish a real Homebrew tap and apt repository metadata
+
+## Icon Credit
+
+- Gold mark in [`assets/au-gold.svg`](assets/au-gold.svg) is derived from Lucide's `coins` icon and used under the Lucide ISC license: <https://github.com/lucide-icons/lucide>
 
 ## License
 

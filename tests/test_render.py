@@ -9,6 +9,7 @@ from agent_usage_cli.render import (
     HIDE_CURSOR,
     SHOW_CURSOR,
     _advance_next_tick,
+    build_watch_frame,
     _enter_watch_terminal,
     _exit_watch_terminal,
     _is_interactive_stream,
@@ -77,6 +78,23 @@ class RenderTests(unittest.TestCase):
     def test_advance_next_tick_keeps_fixed_cadence_without_waiting_extra_after_slow_work(self) -> None:
         self.assertEqual(_advance_next_tick(10.0, 10.2, 1), 11.0)
         self.assertEqual(_advance_next_tick(10.0, 12.7, 1), 12.7)
+
+    def test_build_watch_frame_includes_quick_toc_and_panels(self) -> None:
+        snapshot = {
+            "generated_at": "2026-03-27T19:00:00Z",
+            "tool_version": "0.1.0",
+            "providers": [
+                {"id": "codex", "label": "Codex", "auth": "logged_in", "mode": "plan", "usage": {}},
+                {"id": "claude", "label": "Claude Code", "auth": "logged_in", "mode": "plan", "usage": {}},
+            ],
+        }
+        frame = build_watch_frame(snapshot, 1, width=90)
+        self.assertIn("Quick TOC", frame)
+        self.assertIn("Contents", frame)
+        self.assertIn("Codex", frame)
+        self.assertIn("Claude Code", frame)
+        self.assertIn("╭", frame)
+        self.assertIn("╰", frame)
 
 
 if __name__ == "__main__":
