@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from pathlib import Path
-import tomllib
+import re
 import unittest
 
 from agent_usage_cli import __version__
@@ -23,9 +23,10 @@ class VersioningTests(unittest.TestCase):
         self.assertFalse(release_tag_matches_version("v0.1.2", "0.1.1"))
 
     def test_pyproject_version_matches_package_version(self) -> None:
-        with (ROOT / "pyproject.toml").open("rb") as fh:
-            pyproject = tomllib.load(fh)
-        self.assertEqual(pyproject["project"]["version"], __version__)
+        contents = (ROOT / "pyproject.toml").read_text(encoding="utf-8")
+        match = re.search(r'^version = "([^"]+)"$', contents, re.MULTILINE)
+        self.assertIsNotNone(match)
+        self.assertEqual(match.group(1), __version__)
 
 
 if __name__ == "__main__":

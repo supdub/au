@@ -11,7 +11,10 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
-import tomllib
+try:
+    import tomllib
+except ModuleNotFoundError:
+    tomllib = None
 
 
 def utc_now_iso() -> str:
@@ -28,6 +31,8 @@ def read_json(path: Path) -> dict[str, Any] | None:
 
 
 def read_toml(path: Path) -> dict[str, Any] | None:
+    if tomllib is None:
+        return None
     try:
         with path.open("rb") as handle:
             return tomllib.load(handle)

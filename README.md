@@ -241,7 +241,7 @@ Builder:
 
 ### Curl installer
 
-`install.sh` is the default install path. It auto-selects the matching macOS/Linux release asset when one is published, then installs:
+`install.sh` is the default install path. It auto-selects the matching macOS/Linux release asset when one is published, validates the Linux native binary on the current host, falls back to the portable Python artifact when the native build is incompatible, and for `latest` can rebuild from the `main` source archive if the published portable artifact is still behind the current compatibility fixes. It then installs:
 
 - `~/.local/bin/au`
 - `~/.local/bin/agent-usage` as a compatibility symlink
@@ -269,6 +269,8 @@ Supported environment variables:
 - `AU_VERSION`
 - `AGENT_USAGE_VERSION`
 - `AU_BIN_DIR`
+
+On Linux, the portable fallback requires `python3` on `PATH`. Current source and portable installs support Python 3.10+.
 
 ### Homebrew
 

@@ -87,6 +87,21 @@ asset_exists() {
   curl -IfsSL "$url" >/dev/null 2>/dev/null
 }
 
+download_asset() {
+  local asset_name destination
+  asset_name="$1"
+  destination="$2"
+  curl -fsSL "$(asset_url "$asset_name")" -o "$destination"
+}
+
+source_archive_url() {
+  if [[ "$VERSION" == "latest" ]]; then
+    printf 'https://github.com/%s/archive/refs/heads/main.zip\n' "$REPO"
+  else
+    printf 'https://github.com/%s/archive/refs/tags/%s.zip\n' "$REPO" "$VERSION"
+  fi
+}
+
 resolve_asset_name() {
   local preferred
   preferred="$(preferred_asset_name)"
@@ -123,6 +138,118 @@ ensure_runtime_for_asset() {
   fi
 }
 
+is_linux_native_asset() {
+  [[ "$1" == "au-linux-x86_64" ]]
+}
+
+glibc_incompatibility_output() {
+  local output
+  output="$1"
+  [[ "$output" == *"GLIBC_"* ]] || [[ "$output" == *"glibc"* ]] || [[ "$output" == *"libc.so"* ]] || [[ "$output" == *"libm.so"* ]]
+}
+
+python_runtime_incompatibility_output() {
+  local output
+  output="$1"
+  [[ "$output" == *"No module named 'tomllib'"* ]] || [[ "$output" == *"requires Python 3.11"* ]] || [[ "$output" == *"Python 3.11"* ]]
+}
+
+native_asset_requires_portable_fallback() {
+  local asset_name path output status
+  asset_name="$1"
+  path="$2"
+
+  if ! is_linux_native_asset "$asset_name"; then
+    return 1
+  fi
+
+  chmod 0755 "$path"
+
+  set +e
+  output="$("$path" -v 2>&1)"
+  status=$?
+  set -e
+
+  if [[ "$status" -eq 0 ]]; then
+    return 1
+  fi
+
+  if glibc_incompatibility_output "$output"; then
+    printf 'Native Linux release asset is incompatible with this system; falling back to the portable Python artifact.\n' >&2
+    return 0
+  fi
+
+  printf 'Failed to validate native Linux release asset.\n%s\n' "$output" >&2
+  exit 1
+}
+
+portable_asset_requires_source_fallback() {
+  local asset_name path output status
+  asset_name="$1"
+  path="$2"
+
+  if ! requires_python3 "$asset_name"; then
+    return 1
+  fi
+
+  chmod 0755 "$path"
+
+  set +e
+  output="$("$path" -v 2>&1)"
+  status=$?
+  set -e
+
+  if [[ "$status" -eq 0 ]]; then
+    return 1
+  fi
+
+  if python_runtime_incompatibility_output "$output" && [[ "$VERSION" == "latest" ]]; then
+    printf 'Portable release artifact is incompatible with this Python runtime; building from the main branch source archive instead.\n' >&2
+    return 0
+  fi
+
+  printf 'Failed to validate portable release artifact.\n%s\n' "$output" >&2
+  exit 1
+}
+
+install_from_source_archive() {
+  local archive tmpdir root
+  archive="$(mktemp)"
+  tmpdir="$(mktemp -d)"
+  mkdir -p "$BIN_DIR"
+
+  curl -fsSL "$(source_archive_url)" -o "$archive"
+  python3 - "$archive" "$tmpdir" <<'PY'
+import sys
+import zipfile
+
+archive, destination = sys.argv[1], sys.argv[2]
+with zipfile.ZipFile(archive) as bundle:
+    bundle.extractall(destination)
+PY
+
+  root=""
+  for candidate in "$tmpdir"/*; do
+    if [[ -d "$candidate" ]]; then
+      root="$candidate"
+      break
+    fi
+  done
+
+  if [[ -z "$root" ]]; then
+    printf 'Failed to unpack source archive from %s.\n' "$(source_archive_url)" >&2
+    rm -f "$archive"
+    rm -rf "$tmpdir"
+    exit 1
+  fi
+
+  python3 "$root/scripts/build_zipapp.py" >/dev/null
+  install -m 0755 "$root/dist/au" "$BIN_DIR/au"
+  rm -f "$archive"
+  rm -rf "$tmpdir"
+  ln -sf "$BIN_DIR/au" "$BIN_DIR/agent-usage"
+}
+
 download_url() {
   asset_url "$(resolve_asset_name)"
 }
@@ -137,13 +264,27 @@ install_local() {
 }
 
 install_remote() {
-  local asset_name tmp url
+  local asset_name tmp
   asset_name="$(resolve_asset_name)"
   ensure_runtime_for_asset "$asset_name"
-  url="$(asset_url "$asset_name")"
   tmp="$(mktemp)"
   mkdir -p "$BIN_DIR"
-  curl -fsSL "$url" -o "$tmp"
+  download_asset "$asset_name" "$tmp"
+
+  if native_asset_requires_portable_fallback "$asset_name" "$tmp"; then
+    rm -f "$tmp"
+    asset_name="au"
+    ensure_runtime_for_asset "$asset_name"
+    tmp="$(mktemp)"
+    download_asset "$asset_name" "$tmp"
+  fi
+
+  if portable_asset_requires_source_fallback "$asset_name" "$tmp"; then
+    rm -f "$tmp"
+    install_from_source_archive
+    return
+  fi
+
   install -m 0755 "$tmp" "$BIN_DIR/au"
   rm -f "$tmp"
   ln -sf "$BIN_DIR/au" "$BIN_DIR/agent-usage"
