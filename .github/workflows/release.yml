@@ -88,10 +88,6 @@ jobs:
             label: linux-x86_64
             asset_suffix: linux-x86_64
             extension: ""
-          - os: macos-13
-            label: macos-x86_64
-            asset_suffix: macos-x86_64
-            extension: ""
           - os: macos-14
             label: macos-arm64
             asset_suffix: macos-arm64
