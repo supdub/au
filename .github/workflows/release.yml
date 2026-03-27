@@ -92,6 +92,10 @@ jobs:
             label: macos-arm64
             asset_suffix: macos-arm64
             extension: ""
+          - os: macos-13
+            label: macos-x86_64
+            asset_suffix: macos-x86_64
+            extension: ""
           - os: windows-latest
             label: windows-x86_64
             asset_suffix: windows-x86_64

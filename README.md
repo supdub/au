@@ -80,7 +80,7 @@ Most agent CLIs are good at doing work and bad at answering simple questions lik
 ### Install the stable release
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/supdub/au/main/install.sh | AU_VERSION=v0.1.1 bash
+curl -fsSL https://raw.githubusercontent.com/supdub/au/main/install.sh | bash
 au -v
 ```
 
@@ -241,18 +241,24 @@ Builder:
 
 ### Curl installer
 
-The installer downloads the release artifact named `au` and installs:
+`install.sh` is the default install path. It auto-selects the matching macOS/Linux release asset when one is published, then installs:
 
 - `~/.local/bin/au`
 - `~/.local/bin/agent-usage` as a compatibility symlink
 
-The default documented install path is pinned to `v0.1.1`:
+Default install:
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/supdub/au/main/install.sh | bash
+```
+
+If you want to pin the currently published release explicitly:
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/supdub/au/main/install.sh | AU_VERSION=v0.1.1 bash
 ```
 
-If you want unreleased changes from `main`, use one of these instead:
+If you want unreleased changes from `main`, use one of these source-based options instead:
 
 - `python3 -m pip install --upgrade "git+https://github.com/supdub/au.git@main"`
 - `https://github.com/supdub/au/archive/refs/heads/main.zip`
