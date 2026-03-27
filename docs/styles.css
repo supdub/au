@@ -280,6 +280,11 @@ h3 {
   color: var(--muted);
 }
 
+.choice-card p {
+  margin: 14px 0 0;
+  color: var(--muted);
+}
+
 .contrast {
   padding: 88px 26px 0;
   margin-top: 56px;
@@ -324,6 +329,23 @@ h3 {
   margin: 0;
   overflow-x: auto;
   font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+}
+
+.choice-card pre {
+  margin: 18px 0 0;
+  padding: 16px 18px;
+  overflow-x: auto;
+  border: 1px solid rgba(27, 27, 24, 0.08);
+  border-radius: 18px;
+  background: rgba(255, 253, 248, 0.96);
+  font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+}
+
+.choice-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 18px;
 }
 
 .install {

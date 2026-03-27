@@ -28,12 +28,13 @@
                 <path d="M5 5h10v2H7v8H5z"></path>
               </svg>
             </button>
-            <p class="snippet-label">Install in one step</p>
-            <pre id="install-command"><code>curl -fsSL https://raw.githubusercontent.com/supdub/au/main/install.sh | bash
+            <p class="snippet-label">Install the stable release</p>
+            <pre id="install-command"><code>curl -fsSL https://raw.githubusercontent.com/supdub/au/main/install.sh | AU_VERSION=v0.1.1 bash
 au -v</code></pre>
           </div>
           <div class="hero-actions">
-            <a class="button button-primary" href="https://github.com/supdub/au">View repository</a>
+            <a class="button button-primary" href="https://github.com/supdub/au/releases/download/v0.1.1/au">Download v0.1.1</a>
+            <a class="button button-secondary" href="https://github.com/supdub/au/archive/refs/heads/main.zip">Download main.zip</a>
             <a class="button button-secondary" href="https://github.com/supdub/au/blob/main/README.md">Read docs</a>
           </div>
         </div>
@@ -44,6 +45,41 @@ au -v</code></pre>
       </header>
 
       <main>
+        <section class="section">
+          <div class="section-head">
+            <p class="kicker">Download paths</p>
+            <h2>Default to the published release, and opt into `main` only when you want the latest unreleased changes.</h2>
+          </div>
+          <div class="grid grid-two download-grid">
+            <article class="list-card choice-card">
+              <h3>Stable by default: `v0.1.1`</h3>
+              <p>
+                The published release is the default path here. It installs the portable `au`
+                artifact that shipped on March 27, 2026.
+              </p>
+              <pre><code>curl -fsSL https://raw.githubusercontent.com/supdub/au/main/install.sh | AU_VERSION=v0.1.1 bash
+au -v</code></pre>
+              <div class="choice-links">
+                <a class="button button-primary" href="https://github.com/supdub/au/releases/download/v0.1.1/au">Direct binary</a>
+                <a class="button button-secondary" href="https://github.com/supdub/au/releases/tag/v0.1.1">All release assets</a>
+              </div>
+            </article>
+            <article class="list-card choice-card">
+              <h3>Optional: track `main`</h3>
+              <p>
+                Use the main branch when you want the newest repo state before the next tagged
+                release. This path is intentionally opt-in.
+              </p>
+              <pre><code>python3 -m pip install --upgrade "git+https://github.com/supdub/au.git@main"
+au -v</code></pre>
+              <div class="choice-links">
+                <a class="button button-secondary" href="https://github.com/supdub/au/archive/refs/heads/main.zip">Download source zip</a>
+                <a class="button button-secondary" href="https://github.com/supdub/au">View repository</a>
+              </div>
+            </article>
+          </div>
+        </section>
+
         <section class="section">
           <div class="section-head">
             <p class="kicker">What it is useful for</p>

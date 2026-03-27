@@ -77,10 +77,17 @@ Most agent CLIs are good at doing work and bad at answering simple questions lik
 
 ## Quick Start
 
-### Install with curl
+### Install the stable release
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/supdub/au/main/install.sh | bash
+curl -fsSL https://raw.githubusercontent.com/supdub/au/main/install.sh | AU_VERSION=v0.1.1 bash
+au -v
+```
+
+### Track `main`
+
+```bash
+python3 -m pip install --upgrade "git+https://github.com/supdub/au.git@main"
 au -v
 ```
 
@@ -229,6 +236,8 @@ make dist
 Builder:
 
 - `scripts/build_zipapp.py`
+- Stable release artifact: `https://github.com/supdub/au/releases/download/v0.1.1/au`
+- Full release page: `https://github.com/supdub/au/releases/tag/v0.1.1`
 
 ### Curl installer
 
@@ -236,6 +245,17 @@ The installer downloads the release artifact named `au` and installs:
 
 - `~/.local/bin/au`
 - `~/.local/bin/agent-usage` as a compatibility symlink
+
+The default documented install path is pinned to `v0.1.1`:
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/supdub/au/main/install.sh | AU_VERSION=v0.1.1 bash
+```
+
+If you want unreleased changes from `main`, use one of these instead:
+
+- `python3 -m pip install --upgrade "git+https://github.com/supdub/au.git@main"`
+- `https://github.com/supdub/au/archive/refs/heads/main.zip`
 
 Supported environment variables:
 
