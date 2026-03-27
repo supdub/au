@@ -88,16 +88,15 @@ def build_parser() -> argparse.ArgumentParser:
         help="Pretty-print JSON. Default JSON is compact for automation.",
     )
     parser.add_argument(
-        "-v",
         "--verbose",
         action="store_true",
         help="Include detector evidence such as file paths and raw local signals.",
     )
     parser.add_argument(
-        "-V",
+        "-v",
         "--version",
-        action="version",
-        version=f"%(prog)s {__version__}",
+        action="store_true",
+        help="Print the installed version and a hint for watch mode.",
     )
     return parser
 
@@ -180,6 +179,11 @@ def _detect_reports_in_parallel(
 def main(argv: Sequence[str] | None = None) -> int:
     parser = build_parser()
     args = parser.parse_args(argv)
+
+    if args.version:
+        print(f"au {__version__}")
+        print("Hint: run `au -w` for the live dashboard.")
+        return 0
 
     if args.interval < 1:
         parser.error("--interval must be >= 1")

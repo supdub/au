@@ -1,8 +1,11 @@
 from __future__ import annotations
 
+import contextlib
+import io
 import unittest
 
-from agent_usage_cli.cli import WatchSnapshotBuilder, build_parser
+from agent_usage_cli import __version__
+from agent_usage_cli.cli import WatchSnapshotBuilder, build_parser, main
 from agent_usage_cli.models import ProviderReport
 
 
@@ -13,11 +16,21 @@ class CliParserTests(unittest.TestCase):
         self.assertEqual(args.interval, 1)
 
     def test_short_pretty_and_interval_flags(self) -> None:
-        args = build_parser().parse_args(["claude", "-p", "-i", "3", "-v"])
+        args = build_parser().parse_args(["claude", "-p", "-i", "3", "--verbose"])
         self.assertEqual(args.provider, "claude")
         self.assertTrue(args.pretty)
         self.assertEqual(args.interval, 3)
         self.assertTrue(args.verbose)
+
+    def test_version_flag_prints_version_and_watch_hint(self) -> None:
+        stdout = io.StringIO()
+        with contextlib.redirect_stdout(stdout):
+            exit_code = main(["-v"])
+        self.assertEqual(exit_code, 0)
+        self.assertEqual(
+            stdout.getvalue(),
+            f"au {__version__}\nHint: run `au -w` for the live dashboard.\n",
+        )
 
 
 class WatchSnapshotBuilderTests(unittest.TestCase):

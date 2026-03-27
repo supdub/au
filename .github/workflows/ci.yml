@@ -36,6 +36,9 @@ jobs:
       - name: CLI help smoke test
         run: python -m agent_usage_cli --help
 
+      - name: CLI version smoke test
+        run: python -m agent_usage_cli -v
+
   package:
     name: Package
     runs-on: ubuntu-latest

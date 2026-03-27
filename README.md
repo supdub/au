@@ -81,21 +81,21 @@ Most agent CLIs are good at doing work and bad at answering simple questions lik
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/supdub/au/main/install.sh | bash
-au -w
+au -v
 ```
 
 ### Local development install
 
 ```bash
 ./install.sh --from-local
-au
+au -v
 ```
 
 ### Python install
 
 ```bash
 pip install .
-au -p
+au -v
 ```
 
 ## Showcase
@@ -144,8 +144,9 @@ au
 au codex
 au claude
 au cursor
-au -p
 au -v
+au -p
+au --verbose
 au -w
 au -w -i 2
 ```
@@ -157,8 +158,8 @@ au -w -i 2
 | `-w`, `--watch` | Live dashboard mode |
 | `-i`, `--interval` | Watch refresh interval in seconds, default `1` |
 | `-p`, `--pretty` | Pretty-print JSON |
-| `-v`, `--verbose` | Include detector evidence and raw signals |
-| `-V`, `--version` | Print version |
+| `--verbose` | Include detector evidence and raw signals |
+| `-v`, `--version` | Print the installed version and a hint for watch mode |
 
 ## Output modes
 
@@ -281,7 +282,7 @@ Release jobs:
 
 - verify the tag matches `agent_usage_cli.__version__`
 - run tests and CLI smoke checks
-- publish `dist/au`, the `.deb`, and `SHA256SUMS` to the GitHub release
+- publish the portable `dist/au` zipapp, the `.deb`, native binaries for Linux, macOS, and Windows, and `SHA256SUMS` to the GitHub release
 
 ## Contributing
 

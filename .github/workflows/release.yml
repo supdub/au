@@ -9,9 +9,11 @@ permissions:
   contents: write
 
 jobs:
-  release:
-    name: Build And Publish
+  validate:
+    name: Validate Release
     runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.version.outputs.value }}
 
     steps:
       - name: Checkout
@@ -38,19 +40,123 @@ jobs:
       - name: CLI help smoke test
         run: python -m agent_usage_cli --help
 
+      - name: CLI version smoke test
+        run: python -m agent_usage_cli -v
+
+  build-portable:
+    name: Build Portable Artifacts
+    needs: validate
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install project
+        run: python -m pip install .
+
       - name: Build zipapp
         run: python scripts/build_zipapp.py
 
       - name: Build deb
-        run: ./packaging/debian/build-deb.sh "${{ steps.version.outputs.value }}" all
+        run: ./packaging/debian/build-deb.sh "${{ needs.validate.outputs.version }}" all
+
+      - name: Upload portable artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: portable-artifacts
+          path: |
+            dist/au
+            dist/deb/*.deb
+
+  build-native:
+    name: Build Native (${{ matrix.label }})
+    needs: validate
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-latest
+            label: linux-x86_64
+            asset_suffix: linux-x86_64
+            extension: ""
+          - os: macos-13
+            label: macos-x86_64
+            asset_suffix: macos-x86_64
+            extension: ""
+          - os: macos-14
+            label: macos-arm64
+            asset_suffix: macos-arm64
+            extension: ""
+          - os: windows-latest
+            label: windows-x86_64
+            asset_suffix: windows-x86_64
+            extension: ".exe"
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install project and PyInstaller
+        run: python -m pip install . pyinstaller
+
+      - name: Build native binary
+        shell: bash
+        run: pyinstaller --onefile --name au agent_usage_cli/__main__.py
+
+      - name: Rename release asset
+        shell: bash
+        run: mv "dist/au${{ matrix.extension }}" "dist/au-${{ matrix.asset_suffix }}${{ matrix.extension }}"
+
+      - name: Upload native artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: native-${{ matrix.asset_suffix }}
+          path: dist/au-${{ matrix.asset_suffix }}${{ matrix.extension }}
+
+  publish:
+    name: Publish Release
+    needs:
+      - validate
+      - build-portable
+      - build-native
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: release-assets
+          merge-multiple: true
 
       - name: Generate checksums
-        run: sha256sum dist/au dist/deb/*.deb > dist/SHA256SUMS
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import hashlib
+
+          root = Path("release-assets")
+          files = sorted(path for path in root.iterdir() if path.is_file())
+          lines = []
+          for path in files:
+              digest = hashlib.sha256(path.read_bytes()).hexdigest()
+              lines.append(f"{digest}  {path.name}")
+          (root / "SHA256SUMS").write_text("\n".join(lines) + "\n", encoding="utf-8")
+          PY
 
       - name: Publish GitHub release
         uses: softprops/action-gh-release@v2
         with:
           files: |
-            dist/au
-            dist/deb/*.deb
-            dist/SHA256SUMS
+            release-assets/*

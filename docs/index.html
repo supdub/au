@@ -21,26 +21,19 @@
             logged in or not, plan or API mode, current usage context, and whether a quota window is
             about to bite you.
           </p>
+          <div class="install-top">
+            <p class="snippet-label">Install in one step</p>
+            <pre><code>curl -fsSL https://raw.githubusercontent.com/supdub/au/main/install.sh | bash
+au -v</code></pre>
+          </div>
           <div class="hero-actions">
             <a class="button button-primary" href="https://github.com/supdub/au">View repository</a>
             <a class="button button-secondary" href="https://github.com/supdub/au/blob/main/README.md">Read docs</a>
           </div>
         </div>
         <div class="hero-panel">
-          <div class="mark">AU</div>
-          <div class="terminal-card">
-            <div class="terminal-bar">
-              <span></span><span></span><span></span>
-            </div>
-            <pre>au watch  refresh 1s  3/3 ready
-
-Codex   logged_in  mode=plan
-Claude  logged_in  mode=plan
-Cursor  logged_in  mode=individual_plan
-
-5h left   88%   reset 15:00
-7d left   83%   reset Apr 02 19:00</pre>
-          </div>
+          <div class="panel-label">Real watch-mode screenshot</div>
+          <img class="hero-image" src="./image.png" alt="au watch mode screenshot showing Codex, Claude, and Cursor panels">
         </div>
       </header>
 
@@ -129,22 +122,24 @@ Cursor  logged_in  mode=individual_plan
 
         <section class="section install">
           <div class="section-head">
-            <p class="kicker">Start here</p>
-            <h2>Install it, then ask one precise question.</h2>
+            <p class="kicker">First commands</p>
+            <h2>Once installed, the first check should be almost immediate.</h2>
           </div>
           <div class="install-grid">
             <div class="snippet">
-              <p class="snippet-label">Quick install</p>
-              <pre><code>curl -fsSL https://raw.githubusercontent.com/supdub/au/main/install.sh | bash
-au -w</code></pre>
-            </div>
-            <div class="snippet">
               <p class="snippet-label">Typical questions</p>
-              <pre><code>au
+              <pre><code>au -v
+au
 au codex
 au claude
 au cursor
 au -p</code></pre>
+            </div>
+            <div class="snippet">
+              <p class="snippet-label">Useful habit</p>
+              <pre><code>au -w
+
+# keep it open before or during a longer session</code></pre>
             </div>
           </div>
         </section>
