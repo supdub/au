@@ -1,9 +1,9 @@
-class AgentUsage < Formula
+class Au < Formula
   include Language::Python::Virtualenv
 
   desc "Inspect local auth state and usage context for Codex, Claude Code, and Cursor"
-  homepage "https://github.com/supdub/agent-usage-cli"
-  url "https://github.com/supdub/agent-usage-cli/archive/refs/tags/v0.1.0.tar.gz"
+  homepage "https://github.com/supdub/au"
+  url "https://github.com/supdub/au/archive/refs/tags/v0.1.0.tar.gz"
   sha256 "REPLACE_WITH_SOURCE_TARBALL_SHA256"
   license "MIT"
 

@@ -1,0 +1,49 @@
+name: Bug report
+description: Report a defect in detection, rendering, install, or release behavior.
+title: "[bug] "
+labels:
+  - bug
+body:
+  - type: textarea
+    id: summary
+    attributes:
+      label: Summary
+      description: What happened, and what did you expect instead?
+    validations:
+      required: true
+  - type: dropdown
+    id: area
+    attributes:
+      label: Area
+      options:
+        - Codex detection
+        - Claude detection
+        - Cursor detection
+        - Watch UI
+        - JSON output
+        - Install or packaging
+        - CI or release
+        - Documentation
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      description: Include commands, files, and environment details that matter.
+      placeholder: |
+        1. Run ...
+        2. Observe ...
+    validations:
+      required: true
+  - type: textarea
+    id: output
+    attributes:
+      label: Relevant output
+      description: Paste logs, JSON, or screenshots if useful.
+      render: shell
+  - type: input
+    id: version
+    attributes:
+      label: au version
+      placeholder: 0.1.0

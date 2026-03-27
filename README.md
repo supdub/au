@@ -9,11 +9,17 @@
 </p>
 
 <p align="center">
-  <a href="https://github.com/supdub/agent-usage-cli/actions/workflows/ci.yml"><img alt="CI" src="https://img.shields.io/github/actions/workflow/status/supdub/agent-usage-cli/ci.yml?branch=main&label=ci"></a>
-  <a href="https://github.com/supdub/agent-usage-cli/blob/main/LICENSE"><img alt="License" src="https://img.shields.io/badge/license-MIT-0f172a.svg"></a>
+  <a href="https://github.com/supdub/au/actions/workflows/ci.yml"><img alt="CI" src="https://img.shields.io/github/actions/workflow/status/supdub/au/ci.yml?branch=main&label=ci"></a>
+  <a href="https://github.com/supdub/au/blob/main/LICENSE"><img alt="License" src="https://img.shields.io/badge/license-MIT-0f172a.svg"></a>
   <img alt="Python" src="https://img.shields.io/badge/python-3.11%2B-2563eb.svg">
   <img alt="CLI" src="https://img.shields.io/badge/interface-CLI-16a34a.svg">
   <img alt="Watch mode" src="https://img.shields.io/badge/watch-1s%20refresh-f59e0b.svg">
+</p>
+
+<p align="center">
+  <a href="https://supdub.github.io/au/">Project site</a>
+  ·
+  <a href="CONTRIBUTING.md">Contributing</a>
 </p>
 
 `au` inspects local auth state and local usage signals for:
@@ -38,6 +44,8 @@ It is designed for two very different jobs:
 - [Output modes](#output-modes)
 - [Install and distribution](#install-and-distribution)
 - [CI for PRs](#ci-for-prs)
+- [Releases](#releases)
+- [Contributing](#contributing)
 - [Development](#development)
 - [Data sources](#data-sources)
 - [Known limits](#known-limits)
@@ -72,7 +80,7 @@ Most agent CLIs are good at doing work and bad at answering simple questions lik
 ### Install with curl
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/supdub/agent-usage-cli/main/install.sh | bash
+curl -fsSL https://raw.githubusercontent.com/supdub/au/main/install.sh | bash
 au -w
 ```
 
@@ -239,7 +247,7 @@ Supported environment variables:
 
 Formula scaffold:
 
-- `packaging/homebrew/agent-usage.rb`
+- `packaging/homebrew/au.rb`
 
 ### Debian / apt-style packages
 
@@ -262,6 +270,28 @@ Current CI jobs cover:
 - CLI help smoke test
 - zipapp build
 - Debian package build
+
+## Releases
+
+Tagged pushes matching `v*` run the release workflow at:
+
+- `.github/workflows/release.yml`
+
+Release jobs:
+
+- verify the tag matches `agent_usage_cli.__version__`
+- run tests and CLI smoke checks
+- publish `dist/au`, the `.deb`, and `SHA256SUMS` to the GitHub release
+
+## Contributing
+
+Start with:
+
+- `CONTRIBUTING.md`
+- `.github/ISSUE_TEMPLATE/`
+- `.github/pull_request_template.md`
+
+The public project site is published from `docs/` through `.github/workflows/pages.yml`.
 
 ## Development
 
@@ -325,7 +355,6 @@ tests/                    unit tests
 
 - Improve Codex bucket breakdown if the local client exposes Spark/non-Spark windows
 - Expand Claude window support beyond the current live reset-state probe
-- Add release automation for tagged GitHub releases
 - Publish a real Homebrew tap and apt repository metadata
 
 ## Icon Credit

@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-REPO="${AU_REPO:-supdub/agent-usage-cli}"
+REPO="${AU_REPO:-supdub/au}"
 VERSION="${AU_VERSION:-${AGENT_USAGE_VERSION:-latest}}"
 BIN_DIR="${AU_BIN_DIR:-$HOME/.local/bin}"
 

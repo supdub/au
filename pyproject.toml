@@ -3,7 +3,7 @@ requires = ["setuptools>=68"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "agent-usage-cli"
+name = "au"
 version = "0.1.0"
 description = "Inspect local auth state and usage context for Codex, Claude Code, and Cursor Agent."
 readme = "README.md"
@@ -22,6 +22,10 @@ classifiers = [
   "Topic :: Software Development :: User Interfaces",
   "Topic :: Utilities"
 ]
+
+[project.urls]
+Homepage = "https://github.com/supdub/au"
+Repository = "https://github.com/supdub/au"
 
 [project.scripts]
 au = "agent_usage_cli.cli:main"

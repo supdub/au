@@ -1,0 +1,163 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>au | Local usage clarity for agent CLIs</title>
+    <meta
+      name="description"
+      content="au is a local-first CLI that helps you understand auth state, billing context, and usage windows for Codex, Claude Code, and Cursor Agent."
+    >
+    <link rel="stylesheet" href="./styles.css">
+  </head>
+  <body>
+    <div class="page-shell">
+      <header class="hero">
+        <div class="hero-copy">
+          <p class="eyebrow">Open source. Local-first. Terminal-native.</p>
+          <h1>au tells you what your agent CLI is doing before you burn time guessing.</h1>
+          <p class="lede">
+            It reads the signals already on your machine and turns them into one compact answer:
+            logged in or not, plan or API mode, current usage context, and whether a quota window is
+            about to bite you.
+          </p>
+          <div class="hero-actions">
+            <a class="button button-primary" href="https://github.com/supdub/au">View repository</a>
+            <a class="button button-secondary" href="https://github.com/supdub/au/blob/main/README.md">Read docs</a>
+          </div>
+        </div>
+        <div class="hero-panel">
+          <div class="mark">AU</div>
+          <div class="terminal-card">
+            <div class="terminal-bar">
+              <span></span><span></span><span></span>
+            </div>
+            <pre>au watch  refresh 1s  3/3 ready
+
+Codex   logged_in  mode=plan
+Claude  logged_in  mode=plan
+Cursor  logged_in  mode=individual_plan
+
+5h left   88%   reset 15:00
+7d left   83%   reset Apr 02 19:00</pre>
+          </div>
+        </div>
+      </header>
+
+      <main>
+        <section class="section">
+          <div class="section-head">
+            <p class="kicker">What it is useful for</p>
+            <h2>au is for the moment before you start a serious session.</h2>
+          </div>
+          <div class="grid grid-three">
+            <article class="card">
+              <h3>Check whether you are actually authenticated</h3>
+              <p>
+                Stop discovering halfway through a run that the local client fell back to a missing
+                login state or an expired session.
+              </p>
+            </article>
+            <article class="card">
+              <h3>See plan mode versus API mode clearly</h3>
+              <p>
+                Environment overrides and CLI behavior can quietly change what usage means. `au`
+                makes that explicit.
+              </p>
+            </article>
+            <article class="card">
+              <h3>Estimate session risk before a long task</h3>
+              <p>
+                When a quota window is nearly exhausted, that is operationally important. `au`
+                surfaces the reset timing instead of making you infer it.
+              </p>
+            </article>
+          </div>
+        </section>
+
+        <section class="section contrast">
+          <div class="section-head">
+            <p class="kicker">What it reads</p>
+            <h2>No dashboards in the cloud. No separate account sync.</h2>
+          </div>
+          <div class="grid grid-two">
+            <article class="panel">
+              <h3>Codex</h3>
+              <p>Local auth files, config, and session artifacts already present on your machine.</p>
+            </article>
+            <article class="panel">
+              <h3>Claude Code</h3>
+              <p>Credential state, local session traces, and live CLI-exposed rate-limit signals when available.</p>
+            </article>
+            <article class="panel">
+              <h3>Cursor Agent</h3>
+              <p>Auth state and local billing metadata so the usage story is grounded in actual account context.</p>
+            </article>
+            <article class="panel">
+              <h3>Output shape</h3>
+              <p>Compact JSON for scripts, plus a watch dashboard for humans who keep a terminal open all day.</p>
+            </article>
+          </div>
+        </section>
+
+        <section class="section">
+          <div class="section-head">
+            <p class="kicker">Who it helps</p>
+            <h2>Useful when the CLI is doing real work and the surrounding state has become ambiguous.</h2>
+          </div>
+          <div class="grid grid-two">
+            <article class="list-card">
+              <h3>Good fit for</h3>
+              <ul>
+                <li>people hopping between plan and API-backed workflows</li>
+                <li>teams debugging auth, quota, or billing confusion on local machines</li>
+                <li>automation that needs a compact machine-readable status snapshot</li>
+                <li>terminal users who want a live, low-noise dashboard instead of a log stream</li>
+              </ul>
+            </article>
+            <article class="list-card">
+              <h3>Not trying to be</h3>
+              <ul>
+                <li>a hosted analytics product</li>
+                <li>a billing source of truth for providers that do not expose totals locally</li>
+                <li>a wrapper that changes how Codex, Claude, or Cursor fundamentally work</li>
+                <li>a surveillance layer that ships local session data elsewhere</li>
+              </ul>
+            </article>
+          </div>
+        </section>
+
+        <section class="section install">
+          <div class="section-head">
+            <p class="kicker">Start here</p>
+            <h2>Install it, then ask one precise question.</h2>
+          </div>
+          <div class="install-grid">
+            <div class="snippet">
+              <p class="snippet-label">Quick install</p>
+              <pre><code>curl -fsSL https://raw.githubusercontent.com/supdub/au/main/install.sh | bash
+au -w</code></pre>
+            </div>
+            <div class="snippet">
+              <p class="snippet-label">Typical questions</p>
+              <pre><code>au
+au codex
+au claude
+au cursor
+au -p</code></pre>
+            </div>
+          </div>
+        </section>
+      </main>
+
+      <footer class="footer">
+        <p>
+          `au` is open source and intentionally local-first.
+          <a href="https://github.com/supdub/au">Repository</a>
+          <span class="sep">/</span>
+          <a href="https://github.com/supdub/au/blob/main/CONTRIBUTING.md">Contributing</a>
+        </p>
+      </footer>
+    </div>
+  </body>
+</html>
