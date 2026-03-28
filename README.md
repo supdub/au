@@ -130,11 +130,12 @@ The watch dashboard is built for always-on terminal use:
 
 ### Claude Code
 
-- Detects Claude login from `~/.claude/.credentials.json` and `claude auth status`
+- Detects Claude login from `~/.claude/.credentials.json`
 - Tells the user to run `claude auth login` if login is missing
 - Switches to `mode=api` when `ANTHROPIC_API_KEY` is active
 - Aggregates latest local session usage from `~/.claude/projects/**/*.jsonl`
-- Keeps default Claude inspection local-first; watch mode does not send Claude usage probes unless explicitly requested
+- By default, fetches authenticated claude.ai account metadata from Claude's private OAuth web endpoint without sending model prompts
+- Keeps default Claude inspection free of Claude CLI requests; watch mode does not send Claude usage probes unless explicitly requested
 - With `--claude-insights`, watch mode probes Claude's `/insights` stream to surface live rate-limit window state, polling at most once every 5 minutes because this consumes real Claude usage
 
 ### Cursor Agent
@@ -155,8 +156,12 @@ au cursor
 au -v
 au -p
 au --verbose
+au claude
+au claude --no-claude-web-usage
 au -w
 au -w -i 2
+au claude -w
+au claude -w --no-claude-web-usage
 au claude -w --claude-insights
 ```
 
@@ -168,6 +173,7 @@ au claude -w --claude-insights
 | `-i`, `--interval` | Watch refresh interval in seconds, default `1` |
 | `-p`, `--pretty` | Pretty-print JSON |
 | `--verbose` | Include detector evidence and raw signals |
+| `--no-claude-web-usage` | Disable the default authenticated claude.ai account metadata fetch via the stored Claude OAuth token |
 | `--claude-insights` | Opt in to live Claude `/insights` polling in watch mode; sends real Claude requests and refreshes at most every 5 minutes |
 | `-v`, `--version` | Print the installed version and a hint for watch mode |
 
@@ -364,7 +370,7 @@ tests/                    unit tests
 - `~/.claude/.credentials.json`
 - `~/.claude/settings.json`
 - `~/.claude/projects/**/*.jsonl`
-- `claude auth status`
+- `https://claude.ai/api/oauth/profile` by default, unless `--no-claude-web-usage` is passed
 - `claude -p '/insights' --output-format stream-json --verbose` only when `--claude-insights` is passed in watch mode
 
 ### Cursor Agent
@@ -379,7 +385,7 @@ tests/                    unit tests
 
 - `au` is intentionally local-first. It does not pretend to know server-side totals that the installed CLI does not expose.
 - Codex currently exposes the plan windows available in local `rate_limits`, but this implementation does not separate Spark vs non-Spark buckets.
-- Claude Code currently exposes a live five-hour window reset/state signal on this machine, but not percentage-left fields. `au` will render percentages if the installed Claude CLI starts emitting them.
+- Claude account metadata can be fetched safely with the stored OAuth token, but the exact `claude.ai/settings/usage` quota bars are not currently exposed by a verified OAuth-safe endpoint. `au` only shows Claude quota windows when they are present in local session data or explicit `/insights` output.
 - Cursor Agent billing meaning is available locally, but current account usage totals are not exposed by the installed CLI/config on this machine.
 - If `OPENAI_API_KEY`, `ANTHROPIC_API_KEY`, or `CURSOR_API_KEY` is active, API behavior can diverge from plan-style expectations.
 

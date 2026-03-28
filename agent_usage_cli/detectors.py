@@ -11,6 +11,7 @@ from typing import Any, Iterable
 from agent_usage_cli.models import ProviderReport, UsageSummary
 from agent_usage_cli.utils import (
     env_flag,
+    fetch_json,
     iter_jsonl,
     latest_matching_file,
     read_json,
@@ -106,21 +107,33 @@ def detect_claude(ctx: RuntimeContext) -> ProviderReport:
     settings_path = ctx.home / ".claude" / "settings.json"
     credentials = read_json(credentials_path) or {}
     oauth = credentials.get("claudeAiOauth") or {}
+    access_token = oauth.get("accessToken")
+    enable_claude_web_usage = not env_flag("AU_DISABLE_CLAUDE_WEB_USAGE", ctx.env)
+    web_profile = None
     auth_status = None
     rate_limit_windows: dict[str, Any] = {}
     if not env_flag("AU_DISABLE_SUBPROCESS", ctx.env):
-        auth_status = run_json_command(["claude", "auth", "status"])
+        if env_flag("AU_ENABLE_CLAUDE_CLI_AUTH", ctx.env):
+            auth_status = run_json_command(["claude", "auth", "status"])
         if env_flag("AU_ENABLE_CLAUDE_INSIGHTS", ctx.env):
             rate_limit_windows = _claude_rate_limit_windows(ctx.env)
+    if enable_claude_web_usage and access_token:
+        web_profile = _claude_web_profile(access_token)
     if auth_status:
         oauth = {
             **oauth,
             "subscriptionType": auth_status.get("subscriptionType") or oauth.get("subscriptionType"),
         }
+    if web_profile:
+        organization = web_profile.get("organization") or {}
+        oauth = {
+            **oauth,
+            "subscriptionType": organization.get("organization_type") or oauth.get("subscriptionType"),
+            "rateLimitTier": organization.get("rate_limit_tier") or oauth.get("rateLimitTier"),
+        }
     claude_usage = _latest_claude_usage(ctx.home)
 
     expires_at = _coerce_int(oauth.get("expiresAt"))
-    access_token = oauth.get("accessToken")
     token_present = bool(access_token)
     token_fresh = expires_at is None or expires_at > int(ctx.now.timestamp() * 1000)
     cli_logged_in = bool(auth_status and auth_status.get("loggedIn") is True)
@@ -142,6 +155,8 @@ def detect_claude(ctx: RuntimeContext) -> ProviderReport:
 
     mode = "api" if api_mode else ("plan" if logged_in else "unknown")
     usage = _claude_usage_summary(logged_in, api_mode, claude_usage, rate_limit_windows)
+    web_account = (web_profile.get("account") or {}) if web_profile else {}
+    web_org = (web_profile.get("organization") or {}) if web_profile else {}
 
     report = ProviderReport(
         id="claude",
@@ -159,15 +174,26 @@ def detect_claude(ctx: RuntimeContext) -> ProviderReport:
             "token_fresh": token_fresh,
             "env_anthropic_api_key": api_mode,
             "auth_status_command": bool(auth_status),
+            "web_usage_profile_enabled": enable_claude_web_usage,
+            "web_usage_profile": bool(web_profile),
             "rate_limit_windows_command": bool(rate_limit_windows),
             "usage_session_file": claude_usage.get("session_path") if claude_usage else None,
         },
         account={
-            "subscription_type": oauth.get("subscriptionType"),
-            "rate_limit_tier": oauth.get("rateLimitTier"),
+            "subscription_type": _normalize_claude_subscription(
+                oauth.get("subscriptionType") or web_org.get("organization_type")
+            ),
+            "rate_limit_tier": oauth.get("rateLimitTier") or web_org.get("rate_limit_tier"),
             "expires_at_ms": expires_at,
-            "email": auth_status.get("email") if auth_status else None,
-            "org_name": auth_status.get("orgName") if auth_status else None,
+            "email": auth_status.get("email") if auth_status else web_account.get("email"),
+            "org_name": auth_status.get("orgName") if auth_status else web_org.get("name"),
+            "account_uuid": web_account.get("uuid"),
+            "organization_uuid": web_org.get("uuid"),
+            "billing_type": web_org.get("billing_type"),
+            "organization_type": web_org.get("organization_type"),
+            "subscription_status": web_org.get("subscription_status"),
+            "subscription_created_at": web_org.get("subscription_created_at"),
+            "has_extra_usage_enabled": web_org.get("has_extra_usage_enabled"),
         },
     )
     return report
@@ -686,6 +712,26 @@ def _claude_rate_limit_windows(env: dict[str, str]) -> dict[str, Any]:
             continue
         windows[normalized["name"]] = normalized["window"]
     return windows
+
+
+def _claude_web_profile(access_token: str) -> dict[str, Any] | None:
+    headers = {
+        "Authorization": f"Bearer {access_token}",
+        "User-Agent": "Claude-Code/au",
+        "Accept": "application/json, text/plain, */*",
+        "Origin": "https://claude.ai",
+        "Referer": "https://claude.ai/settings/usage",
+    }
+    return fetch_json("https://claude.ai/api/oauth/profile", headers=headers, timeout=8.0)
+
+
+def _normalize_claude_subscription(value: Any) -> str | None:
+    text = _coerce_str(value)
+    if text == "claude_pro":
+        return "pro"
+    if text == "claude_max":
+        return "max"
+    return text
 
 
 def _normalize_claude_rate_limit(info: Any) -> dict[str, Any] | None:

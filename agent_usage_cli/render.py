@@ -218,6 +218,12 @@ def _render_claude(
     subscription = account.get("subscription_type")
     if subscription:
         lines.append(_info_pair("Plan", str(subscription)))
+    billing_type = account.get("billing_type")
+    if billing_type:
+        lines.append(_info_pair("Billing", str(billing_type)))
+    if account.get("has_extra_usage_enabled") is not None:
+        enabled = "enabled" if account.get("has_extra_usage_enabled") else "disabled"
+        lines.append(_info_pair("Extra", enabled))
 
     showed_window = False
     for name in ("primary", "secondary"):

@@ -247,6 +247,80 @@ class DetectorTests(unittest.TestCase):
         self.assertEqual(report.usage.windows["primary"]["status"], "allowed")
         self.assertEqual(report.usage.windows["primary"]["resets_at"], 1774656000)
 
+    def test_claude_reads_web_usage_profile_from_oauth_endpoint(self) -> None:
+        claude_dir = self.home / ".claude"
+        claude_dir.mkdir()
+        (claude_dir / ".credentials.json").write_text(
+            json.dumps(
+                {
+                    "claudeAiOauth": {
+                        "accessToken": "token",
+                        "expiresAt": 1774657345238,
+                        "subscriptionType": "pro",
+                    }
+                }
+            ),
+            encoding="utf-8",
+        )
+        ctx = RuntimeContext(
+            home=self.home,
+            env={**self.base_env, "AU_DISABLE_SUBPROCESS": "1"},
+            now=self.now,
+        )
+        with patch(
+            "agent_usage_cli.detectors.fetch_json",
+            return_value={
+                "account": {
+                    "uuid": "acct-1",
+                    "email": "person@example.com",
+                },
+                "organization": {
+                    "uuid": "org-1",
+                    "name": "Example Org",
+                    "organization_type": "claude_pro",
+                    "billing_type": "stripe_subscription",
+                    "rate_limit_tier": "default_claude_ai",
+                    "has_extra_usage_enabled": True,
+                    "subscription_status": "active",
+                    "subscription_created_at": "2026-03-01T00:00:00Z",
+                },
+            },
+        ):
+            report = detect_claude(ctx)
+        self.assertEqual(report.account["subscription_type"], "pro")
+        self.assertEqual(report.account["billing_type"], "stripe_subscription")
+        self.assertTrue(report.account["has_extra_usage_enabled"])
+        self.assertEqual(report.account["email"], "person@example.com")
+        self.assertTrue(report.evidence["web_usage_profile"])
+
+    def test_claude_skips_cli_auth_status_by_default(self) -> None:
+        claude_dir = self.home / ".claude"
+        claude_dir.mkdir()
+        (claude_dir / ".credentials.json").write_text(
+            json.dumps(
+                {
+                    "claudeAiOauth": {
+                        "accessToken": "token",
+                        "expiresAt": 1774657345238,
+                        "subscriptionType": "pro",
+                    }
+                }
+            ),
+            encoding="utf-8",
+        )
+        ctx = RuntimeContext(
+            home=self.home,
+            env={**self.base_env},
+            now=self.now,
+        )
+        with patch("agent_usage_cli.detectors.run_json_command") as run_json_command, patch(
+            "agent_usage_cli.detectors.fetch_json",
+            return_value=None,
+        ):
+            report = detect_claude(ctx)
+        run_json_command.assert_not_called()
+        self.assertEqual(report.auth, "logged_in")
+
     def test_cursor_usage_based_from_agent_files(self) -> None:
         auth_dir = self.home / ".config" / "cursor"
         auth_dir.mkdir(parents=True)

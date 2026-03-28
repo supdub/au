@@ -7,6 +7,8 @@ import select
 import shutil
 import subprocess
 import time
+import urllib.error
+import urllib.request
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
@@ -28,6 +30,22 @@ def read_json(path: Path) -> dict[str, Any] | None:
         return None
     except (OSError, json.JSONDecodeError):
         return None
+
+
+def fetch_json(url: str, *, headers: dict[str, str] | None = None, timeout: float = 5.0) -> dict[str, Any] | None:
+    if not url:
+        return None
+    request = urllib.request.Request(url, headers=headers or {})
+    try:
+        with urllib.request.urlopen(request, timeout=timeout) as response:
+            payload = response.read().decode("utf-8")
+    except (OSError, urllib.error.HTTPError, urllib.error.URLError):
+        return None
+    try:
+        data = json.loads(payload)
+    except json.JSONDecodeError:
+        return None
+    return data if isinstance(data, dict) else None
 
 
 def read_toml(path: Path) -> dict[str, Any] | None:

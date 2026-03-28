@@ -8,7 +8,7 @@ from pathlib import Path
 from unittest.mock import patch
 
 from agent_usage_cli import __version__
-from agent_usage_cli.cli import WatchSnapshotBuilder, build_parser, main, watch_detector_by_provider
+from agent_usage_cli.cli import DETECTOR_BY_PROVIDER, WatchSnapshotBuilder, build_parser, main, watch_detector_by_provider
 from agent_usage_cli.detectors import RuntimeContext
 from agent_usage_cli.models import ProviderReport
 
@@ -26,11 +26,20 @@ class CliParserTests(unittest.TestCase):
         self.assertEqual(args.interval, 3)
         self.assertTrue(args.verbose)
         self.assertFalse(args.claude_insights)
+        self.assertTrue(args.claude_web_usage)
 
     def test_claude_insights_flag_is_explicit_opt_in(self) -> None:
         args = build_parser().parse_args(["claude", "-w", "--claude-insights"])
         self.assertTrue(args.watch)
         self.assertTrue(args.claude_insights)
+
+    def test_claude_web_usage_is_enabled_by_default(self) -> None:
+        args = build_parser().parse_args(["claude"])
+        self.assertTrue(args.claude_web_usage)
+
+    def test_claude_web_usage_can_be_disabled_explicitly(self) -> None:
+        args = build_parser().parse_args(["claude", "--no-claude-web-usage"])
+        self.assertFalse(args.claude_web_usage)
 
     def test_version_flag_prints_version_and_watch_hint(self) -> None:
         stdout = io.StringIO()
@@ -52,10 +61,29 @@ class WatchSnapshotBuilderTests(unittest.TestCase):
         )
         with patch("agent_usage_cli.cli.detect_claude") as detect:
             detect.return_value = ProviderReport(id="claude", label="Claude", auth="logged_in")
-            watch_detector_by_provider(True)["claude"](ctx)
+            watch_detector_by_provider(True, False)["claude"](ctx)
         detect.assert_called_once()
         called_ctx = detect.call_args.args[0]
         self.assertEqual(called_ctx.env["AU_ENABLE_CLAUDE_INSIGHTS"], "1")
+
+    def test_claude_web_usage_detector_is_default(self) -> None:
+        self.assertIs(
+            watch_detector_by_provider(False, True)["claude"],
+            DETECTOR_BY_PROVIDER["claude"],
+        )
+
+    def test_claude_web_usage_detector_can_be_disabled(self) -> None:
+        ctx = RuntimeContext(
+            home=Path("/tmp"),
+            env={},
+            now=datetime(2026, 3, 28, tzinfo=timezone.utc),
+        )
+        with patch("agent_usage_cli.cli.detect_claude") as detect:
+            detect.return_value = ProviderReport(id="claude", label="Claude", auth="logged_in")
+            watch_detector_by_provider(False, False)["claude"](ctx)
+        detect.assert_called_once()
+        called_ctx = detect.call_args.args[0]
+        self.assertEqual(called_ctx.env["AU_DISABLE_CLAUDE_WEB_USAGE"], "1")
 
     def test_reuses_slow_provider_until_ttl_expires(self) -> None:
         clock_values = iter([0.0, 0.5, 1.1, 10.2])

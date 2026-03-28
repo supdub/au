@@ -23,8 +23,13 @@ from agent_usage_cli.utils import utc_now_iso
 
 WATCH_PROVIDER_TTLS = {
     "codex": 1.0,
-    "claude": 15.0,
+    "claude": 60.0,
     "cursor": 10.0,
+}
+
+WATCH_PROVIDER_TTLS_LOCAL_ONLY = {
+    **WATCH_PROVIDER_TTLS,
+    "claude": 15.0,
 }
 
 WATCH_PROVIDER_TTLS_WITH_CLAUDE_INSIGHTS = {
@@ -39,15 +44,22 @@ DETECTOR_BY_PROVIDER = {
     "cursor": detect_cursor,
 }
 
-def watch_detector_by_provider(enable_claude_insights: bool) -> dict[str, Callable[..., ProviderReport]]:
-    if not enable_claude_insights:
+def watch_detector_by_provider(
+    enable_claude_insights: bool,
+    enable_claude_web_usage: bool,
+) -> dict[str, Callable[..., ProviderReport]]:
+    if not enable_claude_insights and enable_claude_web_usage:
         return DETECTOR_BY_PROVIDER
     return {
         "codex": detect_codex,
         "claude": lambda ctx: detect_claude(
             RuntimeContext(
                 home=ctx.home,
-                env={**ctx.env, "AU_ENABLE_CLAUDE_INSIGHTS": "1"},
+                env={
+                    **ctx.env,
+                    **({"AU_ENABLE_CLAUDE_INSIGHTS": "1"} if enable_claude_insights else {}),
+                    **({"AU_DISABLE_CLAUDE_WEB_USAGE": "1"} if not enable_claude_web_usage else {}),
+                },
                 now=ctx.now,
             )
         ),
@@ -110,6 +122,22 @@ def build_parser() -> argparse.ArgumentParser:
         ),
     )
     parser.add_argument(
+        "--claude-web-usage",
+        dest="claude_web_usage",
+        action="store_true",
+        default=True,
+        help=argparse.SUPPRESS,
+    )
+    parser.add_argument(
+        "--no-claude-web-usage",
+        dest="claude_web_usage",
+        action="store_false",
+        help=(
+            "Disable authenticated claude.ai account metadata fetches from the stored Claude OAuth token. "
+            "By default, au uses the safe web metadata path without sending model prompts."
+        ),
+    )
+    parser.add_argument(
         "-v",
         "--version",
         action="store_true",
@@ -120,6 +148,31 @@ def build_parser() -> argparse.ArgumentParser:
 
 def make_snapshot(provider: str, verbose: bool = False) -> dict[str, object]:
     ctx = default_context()
+    provider_ids = list(PROVIDER_ORDER if provider == "all" else (provider,))
+    providers = [report.to_dict() for report in collect_reports(provider_ids, ctx)]
+    if not verbose:
+        for provider_data in providers:
+            provider_data.pop("evidence", None)
+    return {
+        "generated_at": utc_now_iso(),
+        "tool_version": __version__,
+        "providers": providers,
+    }
+
+
+def make_snapshot_with_options(
+    provider: str,
+    *,
+    verbose: bool = False,
+    enable_claude_web_usage: bool = True,
+) -> dict[str, object]:
+    ctx = default_context()
+    if not enable_claude_web_usage:
+        ctx = RuntimeContext(
+            home=ctx.home,
+            env={**ctx.env, "AU_DISABLE_CLAUDE_WEB_USAGE": "1"},
+            now=ctx.now,
+        )
     provider_ids = list(PROVIDER_ORDER if provider == "all" else (provider,))
     providers = [report.to_dict() for report in collect_reports(provider_ids, ctx)]
     if not verbose:
@@ -206,21 +259,26 @@ def main(argv: Sequence[str] | None = None) -> int:
         parser.error("--interval must be >= 1")
 
     if args.watch:
+        ttl_by_provider = WATCH_PROVIDER_TTLS
+        if not args.claude_web_usage:
+            ttl_by_provider = WATCH_PROVIDER_TTLS_LOCAL_ONLY
+        if args.claude_insights:
+            ttl_by_provider = WATCH_PROVIDER_TTLS_WITH_CLAUDE_INSIGHTS
         return watch_loop(
             WatchSnapshotBuilder(
                 args.provider,
                 verbose=args.verbose,
-                ttl_by_provider=(
-                    WATCH_PROVIDER_TTLS_WITH_CLAUDE_INSIGHTS
-                    if args.claude_insights
-                    else WATCH_PROVIDER_TTLS
-                ),
-                detector_by_provider=watch_detector_by_provider(args.claude_insights),
+                ttl_by_provider=ttl_by_provider,
+                detector_by_provider=watch_detector_by_provider(args.claude_insights, args.claude_web_usage),
             ),
             args.interval,
         )
 
-    snapshot = make_snapshot(args.provider, verbose=args.verbose)
+    snapshot = make_snapshot_with_options(
+        args.provider,
+        verbose=args.verbose,
+        enable_claude_web_usage=args.claude_web_usage,
+    )
     if args.pretty:
         print(json.dumps(snapshot, indent=2, sort_keys=False))
     else:
