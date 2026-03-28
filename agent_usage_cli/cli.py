@@ -27,23 +27,32 @@ WATCH_PROVIDER_TTLS = {
     "cursor": 10.0,
 }
 
+WATCH_PROVIDER_TTLS_WITH_CLAUDE_INSIGHTS = {
+    **WATCH_PROVIDER_TTLS,
+    # `/insights` is a real Claude request, so poll conservatively when enabled.
+    "claude": 300.0,
+}
+
 DETECTOR_BY_PROVIDER = {
     "codex": detect_codex,
     "claude": detect_claude,
     "cursor": detect_cursor,
 }
 
-WATCH_DETECTOR_BY_PROVIDER = {
-    "codex": detect_codex,
-    "claude": lambda ctx: detect_claude(
-        RuntimeContext(
-            home=ctx.home,
-            env={**ctx.env, "AU_ENABLE_CLAUDE_INSIGHTS": "1"},
-            now=ctx.now,
-        )
-    ),
-    "cursor": detect_cursor,
-}
+def watch_detector_by_provider(enable_claude_insights: bool) -> dict[str, Callable[..., ProviderReport]]:
+    if not enable_claude_insights:
+        return DETECTOR_BY_PROVIDER
+    return {
+        "codex": detect_codex,
+        "claude": lambda ctx: detect_claude(
+            RuntimeContext(
+                home=ctx.home,
+                env={**ctx.env, "AU_ENABLE_CLAUDE_INSIGHTS": "1"},
+                now=ctx.now,
+            )
+        ),
+        "cursor": detect_cursor,
+    }
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -91,6 +100,14 @@ def build_parser() -> argparse.ArgumentParser:
         "--verbose",
         action="store_true",
         help="Include detector evidence such as file paths and raw local signals.",
+    )
+    parser.add_argument(
+        "--claude-insights",
+        action="store_true",
+        help=(
+            "Opt in to Claude `/insights` polling in watch mode. This sends live Claude requests, "
+            "can consume Claude plan usage, and refreshes at most every 5 minutes."
+        ),
     )
     parser.add_argument(
         "-v",
@@ -193,7 +210,12 @@ def main(argv: Sequence[str] | None = None) -> int:
             WatchSnapshotBuilder(
                 args.provider,
                 verbose=args.verbose,
-                detector_by_provider=WATCH_DETECTOR_BY_PROVIDER,
+                ttl_by_provider=(
+                    WATCH_PROVIDER_TTLS_WITH_CLAUDE_INSIGHTS
+                    if args.claude_insights
+                    else WATCH_PROVIDER_TTLS
+                ),
+                detector_by_provider=watch_detector_by_provider(args.claude_insights),
             ),
             args.interval,
         )

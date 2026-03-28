@@ -134,7 +134,8 @@ The watch dashboard is built for always-on terminal use:
 - Tells the user to run `claude auth login` if login is missing
 - Switches to `mode=api` when `ANTHROPIC_API_KEY` is active
 - Aggregates latest local session usage from `~/.claude/projects/**/*.jsonl`
-- In watch mode, probes Claude's `/insights` stream to surface live rate-limit window state when the installed CLI exposes it
+- Keeps default Claude inspection local-first; watch mode does not send Claude usage probes unless explicitly requested
+- With `--claude-insights`, watch mode probes Claude's `/insights` stream to surface live rate-limit window state, polling at most once every 5 minutes because this consumes real Claude usage
 
 ### Cursor Agent
 
@@ -156,6 +157,7 @@ au -p
 au --verbose
 au -w
 au -w -i 2
+au claude -w --claude-insights
 ```
 
 ### Flags
@@ -166,6 +168,7 @@ au -w -i 2
 | `-i`, `--interval` | Watch refresh interval in seconds, default `1` |
 | `-p`, `--pretty` | Pretty-print JSON |
 | `--verbose` | Include detector evidence and raw signals |
+| `--claude-insights` | Opt in to live Claude `/insights` polling in watch mode; sends real Claude requests and refreshes at most every 5 minutes |
 | `-v`, `--version` | Print the installed version and a hint for watch mode |
 
 ## Output modes
@@ -362,7 +365,7 @@ tests/                    unit tests
 - `~/.claude/settings.json`
 - `~/.claude/projects/**/*.jsonl`
 - `claude auth status`
-- `claude -p '/insights' --output-format stream-json --verbose` in watch mode
+- `claude -p '/insights' --output-format stream-json --verbose` only when `--claude-insights` is passed in watch mode
 
 ### Cursor Agent
 

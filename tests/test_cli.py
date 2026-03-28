@@ -3,9 +3,13 @@ from __future__ import annotations
 import contextlib
 import io
 import unittest
+from datetime import datetime, timezone
+from pathlib import Path
+from unittest.mock import patch
 
 from agent_usage_cli import __version__
-from agent_usage_cli.cli import WatchSnapshotBuilder, build_parser, main
+from agent_usage_cli.cli import WatchSnapshotBuilder, build_parser, main, watch_detector_by_provider
+from agent_usage_cli.detectors import RuntimeContext
 from agent_usage_cli.models import ProviderReport
 
 
@@ -21,6 +25,12 @@ class CliParserTests(unittest.TestCase):
         self.assertTrue(args.pretty)
         self.assertEqual(args.interval, 3)
         self.assertTrue(args.verbose)
+        self.assertFalse(args.claude_insights)
+
+    def test_claude_insights_flag_is_explicit_opt_in(self) -> None:
+        args = build_parser().parse_args(["claude", "-w", "--claude-insights"])
+        self.assertTrue(args.watch)
+        self.assertTrue(args.claude_insights)
 
     def test_version_flag_prints_version_and_watch_hint(self) -> None:
         stdout = io.StringIO()
@@ -34,6 +44,19 @@ class CliParserTests(unittest.TestCase):
 
 
 class WatchSnapshotBuilderTests(unittest.TestCase):
+    def test_claude_insights_detector_is_opt_in(self) -> None:
+        ctx = RuntimeContext(
+            home=Path("/tmp"),
+            env={},
+            now=datetime(2026, 3, 28, tzinfo=timezone.utc),
+        )
+        with patch("agent_usage_cli.cli.detect_claude") as detect:
+            detect.return_value = ProviderReport(id="claude", label="Claude", auth="logged_in")
+            watch_detector_by_provider(True)["claude"](ctx)
+        detect.assert_called_once()
+        called_ctx = detect.call_args.args[0]
+        self.assertEqual(called_ctx.env["AU_ENABLE_CLAUDE_INSIGHTS"], "1")
+
     def test_reuses_slow_provider_until_ttl_expires(self) -> None:
         clock_values = iter([0.0, 0.5, 1.1, 10.2])
         calls = {"codex": 0, "claude": 0, "cursor": 0}
