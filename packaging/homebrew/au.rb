@@ -3,7 +3,7 @@ class Au < Formula
 
   desc "Inspect local auth state and usage context for Codex, Claude Code, and Cursor"
   homepage "https://github.com/supdub/au"
-  url "https://github.com/supdub/au/archive/refs/tags/v0.1.1.tar.gz"
+  url "https://github.com/supdub/au/archive/refs/tags/v0.1.2.tar.gz"
   sha256 "REPLACE_WITH_SOURCE_TARBALL_SHA256"
   license "MIT"
 

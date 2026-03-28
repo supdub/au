@@ -45,7 +45,7 @@ class InstallScriptTests(unittest.TestCase):
         self,
         assets: dict[str, str],
         *,
-        version: str = "v0.1.1",
+        version: str = "v0.1.2",
         archives: dict[str, dict[str, str]] | None = None,
     ) -> tuple[subprocess.CompletedProcess[str], str]:
         with tempfile.TemporaryDirectory() as tmpdir_name:
@@ -137,14 +137,14 @@ shutil.copyfile(src, output)
 
     def test_macos_arm64_uses_versioned_native_release_asset(self) -> None:
         self.assertEqual(
-            self.run_script(version="v0.1.1", os_name="Darwin", arch="arm64"),
-            "https://github.com/supdub/au/releases/download/v0.1.1/au-macos-arm64",
+            self.run_script(version="v0.1.2", os_name="Darwin", arch="arm64"),
+            "https://github.com/supdub/au/releases/download/v0.1.2/au-macos-arm64",
         )
 
     def test_unknown_platform_falls_back_to_portable_artifact(self) -> None:
         self.assertEqual(
-            self.run_script(version="v0.1.1", os_name="Linux", arch="riscv64"),
-            "https://github.com/supdub/au/releases/download/v0.1.1/au",
+            self.run_script(version="v0.1.2", os_name="Linux", arch="riscv64"),
+            "https://github.com/supdub/au/releases/download/v0.1.2/au",
         )
 
     def test_install_falls_back_to_portable_asset_on_glibc_error(self) -> None:

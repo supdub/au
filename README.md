@@ -192,7 +192,7 @@ Example shape:
 ```json
 {
   "generated_at": "2026-03-27T19:06:24Z",
-  "tool_version": "0.1.1",
+  "tool_version": "0.1.2",
   "providers": [
     {
       "id": "codex",
@@ -245,8 +245,8 @@ make dist
 Builder:
 
 - `scripts/build_zipapp.py`
-- Stable release artifact: `https://github.com/supdub/au/releases/download/v0.1.1/au`
-- Full release page: `https://github.com/supdub/au/releases/tag/v0.1.1`
+- Stable release artifact: `https://github.com/supdub/au/releases/download/v0.1.2/au`
+- Full release page: `https://github.com/supdub/au/releases/tag/v0.1.2`
 
 ### Curl installer
 
@@ -264,7 +264,7 @@ curl -fsSL https://raw.githubusercontent.com/supdub/au/main/install.sh | bash
 If you want to pin the currently published release explicitly:
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/supdub/au/main/install.sh | AU_VERSION=v0.1.1 bash
+curl -fsSL https://raw.githubusercontent.com/supdub/au/main/install.sh | AU_VERSION=v0.1.2 bash
 ```
 
 If you want unreleased changes from `main`, use one of these source-based options instead:
@@ -292,7 +292,7 @@ Formula scaffold:
 Build a `.deb`:
 
 ```bash
-./packaging/debian/build-deb.sh 0.1.1 all
+./packaging/debian/build-deb.sh 0.1.2 all
 ```
 
 ## CI for PRs

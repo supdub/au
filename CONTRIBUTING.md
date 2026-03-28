@@ -46,7 +46,7 @@ Releases are tag-driven.
 1. Bump `agent_usage_cli.__version__` in `agent_usage_cli/__init__.py`.
 2. Verify `make test` and `make dist`.
 3. Commit the release changes.
-4. Create and push a tag like `v0.1.1`.
+4. Create and push a tag like `v0.1.2`.
 
 The release workflow publishes the `au` zipapp, the Debian package, and checksums.
 

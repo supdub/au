@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-VERSION="${1:-0.1.1}"
+VERSION="${1:-0.1.2}"
 ARCH="${2:-all}"
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 PKG_ROOT="$ROOT/dist/deb/au_${VERSION}_${ARCH}"
